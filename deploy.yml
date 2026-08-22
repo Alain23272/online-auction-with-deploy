@@ -1,0 +1,25 @@
+---
+- name: Deploy Application to Kubernetes
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Apply MySQL Manifest
+      command: kubectl apply -f k8s/mysql-deployment.yaml
+
+    - name: Wait for MySQL to be ready
+      command: kubectl wait --for=condition=ready pod -l app=mysql --timeout=60s
+      ignore_errors: yes
+
+    - name: Apply Backend Manifest
+      command: kubectl apply -f k8s/backend-deployment.yaml
+
+    - name: Apply Frontend Manifest
+      command: kubectl apply -f k8s/frontend-deployment.yaml
+
+    - name: Display Services
+      command: kubectl get svc
+      register: svc_output
+
+    - name: Print Service Info
+      debug:
+        var: svc_output.stdout_lines
